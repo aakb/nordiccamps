@@ -9,7 +9,7 @@
  * 
  * Add class 'menu-dropdown' to block of the menu in the header.
  */
-function aarsberetning2011_preprocess_block(&$vars) {
+function nordiccamps_preprocess_block(&$vars) {
  if(isset($vars['elements']['#block']->module) && $vars['elements']['#block']->module == 'menu_block') {
    if ($vars['elements']['#delta'] == 2 || $vars['elements']['#delta'] == 4) {
     $vars['attributes_array']['class'][] = 'menu-dropdown';
@@ -22,7 +22,7 @@ function aarsberetning2011_preprocess_block(&$vars) {
  * Add IE css.
  */
 
-function aarsberetning2011_preprocess_html(&$variables) { 
+function nordiccamps_preprocess_html(&$variables) { 
   // Add css for using background-size: cover in IE.
   drupal_add_css(path_to_theme() . '/css/flexi-background.css', array('group' => CSS_THEME, 'browsers' => array('IE' => 'IE', '!IE' => FALSE), 'weight' => 999, 'preprocess' => FALSE));
   
@@ -36,7 +36,7 @@ function aarsberetning2011_preprocess_html(&$variables) {
  *
  * Adds classes based on menu level to nested menus.
  */
-function aarsberetning2011_menu_link(array $variables) {
+function nordiccamps_menu_link(array $variables) {
 
   $element = $variables['element'];
   $sub_menu = '';
@@ -62,14 +62,14 @@ function aarsberetning2011_menu_link(array $variables) {
  *  
  */
 
-function aarsberetning2011_links__locale_block($variables) {
+function nordiccamps_links__locale_block($variables) {
   global $language;
   unset($variables['links'][$language->language]);
 
   return theme('links', $variables);
 }
 
-function aarsberetning2011_page_alter(&$page) {
+function nordiccamps_page_alter(&$page) {
 
  // Check if we are on a node page.
   if ($node = menu_get_object()) {

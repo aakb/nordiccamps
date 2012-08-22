@@ -1,7 +1,7 @@
 ; ----- / BASIC INFO / -----
 
-name = Aarsberetning 2011
-description = Theme for Aarsberetning 2011.
+name = Nordiccamps 2011
+description = Theme for Nordiccamps 2011.
 core = 7.x
 screenshot = screenshot.png
 base theme = itkore
@@ -33,11 +33,11 @@ zones[footer] = 'Footer'
 
 ; ----- / OPTIONAL CSS / -----
 
-css[aarsberetning2011.css][name] = 'Aarsberetning 2011 styles'
-css[aarsberetning2011.css][description] = 'This file holds all the custom CSS of your theme.'
-css[aarsberetning2011.css][options][weight] = '10'
+css[nordiccamps.css][name] = 'Nordiccamps styles'
+css[nordiccamps.css][description] = 'This file holds all the custom CSS of your theme.'
+css[nordiccamps.css][options][weight] = '10'
 
-css[mediaqueries.css][name] = 'Aarsberetning 2011 mediaqueries'
+css[mediaqueries.css][name] = 'Nordiccamps mediaqueries'
 css[mediaqueries.css][description] = 'This file holds the mediaqueries styles.'
 css[mediaqueries.css][options][weight] = '10'
 
@@ -105,7 +105,7 @@ settings[alpha_libraries][omega_equalheights] = '0'
 settings[alpha_libraries][jquery_fancybox] = '0'
 settings[alpha_css][itkore.css] = 'itkore.css'
 settings[alpha_css][itkore.print.css] = 'itkore.print.css'
-settings[alpha_css][aarsberetning2011.css] = 'aarsberetning2011.css'
+settings[alpha_css][nordiccamps.css] = 'nordiccamps.css'
 settings[alpha_css][mediaqueries.css] = 'mediaqueries.css'
 settings[alpha_css][alpha-reset.css] = '0'
 settings[alpha_css][alpha-mobile.css] = '0'
