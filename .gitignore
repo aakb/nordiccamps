@@ -1,32 +1,6 @@
-# Assorted IDE & editor files
-# --------------------------------
-*.esproj
-*.kpf
-*.tmproj
-.cache
-.project
-.settings
-*/_notes
-nbproject
-.DS_Store
-._*
-drushrc.php
+# Ignore configuration files that may contain sensitive information.
+sites/*/settings*.php
 
-# Unused version control info,
-# Patches, crud
-# -------------------------------
-CVS
-*.patch
-*~
-
-# Settings, files
-# ------------------------------
-settings.php
-files
-private
-
-/.sass-cache/
-/themes/nordiccamps/.sass-cache/
-/modules/contrib/coder/
-/themes/nordiccamps/sass/.sass-cache/
->>>>>>> 298aefbc3351bce3b5ce1f51a0e106c086343a30
+# Ignore paths that contain user-generated content.
+sites/*/files
+sites/*/private
