@@ -12,6 +12,9 @@ function dynamic_background_context_settings_form() {
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_context_image_style');
 
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_context_image_behaviour');
+
   return $form;
 }
 

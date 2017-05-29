@@ -49,6 +49,9 @@ function dynamic_background_blog_settings_form() {
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_blog_image_style');
 
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_blog_image_behaviour');
+
   return $form;
 }
 
@@ -66,12 +69,16 @@ function dynamic_background_blog_form($form, $form_state, $user) {
     $settings = variable_get('dynamic_background_blog', array());
     $no_of_images = isset($settings['upload']['no_of_images']) ? $settings['upload']['no_of_images'] : 1;
 
-    // Add user upload form.
-    $upload_form = dynamic_background_user_upload_form('blog', $user->uid, $no_of_images);
-    $form['dynamic_background'] += $upload_form['form'];
+    // Only proceed if the form is needed.
+    if ($no_of_images > 0) {
+      // Add user upload form.
+      $upload_form = dynamic_background_user_upload_form('blog', $user->uid, $no_of_images);
+      $form['dynamic_background'] += $upload_form['form'];
 
-    // Add validation function.
-    $form['#validate'][] = $upload_form['validate'];
+      // Add submission function.
+      $form['#submit'][] = $upload_form['submit'];
+      $form['#submit'][] = 'dynamic_background_blog_form_submit';
+    }
   }
 
   // Add submit handler.
@@ -136,6 +143,13 @@ function dynamic_background_blog_dynamic_background_css($vars) {
   // If user id was found, try to load blog background image if one is definded.
   if (!is_null($uid)) {
     $image = dynamic_background_active_image('blog', $uid);
+
+    // If no image have been found try to select random image (if configured).
+    $image_behaviour = variable_get('dynamic_background_blog_image_behaviour', array());
+    if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+      $image = dynamic_background_random_image('blog', $uid);
+    }
+
     if ($image) {
       // Load image style settings.
       $image_style = variable_get('dynamic_background_blog_image_style', FALSE);

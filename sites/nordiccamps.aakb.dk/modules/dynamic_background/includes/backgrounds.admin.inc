@@ -97,7 +97,7 @@ function dynamic_background_admin_images($form, &$form_state) {
   $form['#theme'] = array('system_settings_form');
 
   // Set validators and submit handler(s).
-  $form['#validate'][] = 'dynamic_background_admin_images_validate';  
+  $form['#validate'][] = 'dynamic_background_admin_images_validate';
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save configuration'),
@@ -153,7 +153,7 @@ function dynamic_background_admin_images_validate($form, &$form_state) {
       try {
         dynamic_background_save_image($file_field, 'default', -1);
       }
-      catch(Exception $e) {
+      catch (Exception $e) {
         form_set_error('default', $e->getMessage());
       }
     }
@@ -161,7 +161,7 @@ function dynamic_background_admin_images_validate($form, &$form_state) {
 
   // Check for image deletion.
   foreach ($form_state['values'] as $field => $data) {
-    if (preg_match('/^image_(\d{1,2})/', $field) && isset($data['picture_delete']) && $data['picture_delete']) {
+    if (preg_match('/^image_(\d{1,4})/', $field) && isset($data['picture_delete']) && $data['picture_delete']) {
       try {
         // Delete the image.
         dynamic_background_delete_image($data['fid']);

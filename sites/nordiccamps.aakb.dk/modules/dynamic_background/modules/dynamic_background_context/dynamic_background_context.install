@@ -1,7 +1,12 @@
 <?php
 
 /**
- * Implements hook_uninstall()
+ * @file
+ * Installation and update functions for this module.
+ */
+
+/**
+ * Implements hook_uninstall().
  */
 function dynamic_background_context_uninstall() {
   variable_del('dynamic_background_context_css');
@@ -14,8 +19,8 @@ function dynamic_background_context_uninstall() {
 function dynamic_background_context_update_7000() {
   $images = variable_get('dynamic_background_images', array());
   $result = db_select('context', 'c')
-            ->fields('c', array('reactions', 'name'))
-            ->execute();
+    ->fields('c', array('reactions', 'name'))
+    ->execute();
 
   foreach ($result as $row) {
     $new = array();
@@ -42,5 +47,5 @@ function dynamic_background_context_update_7000() {
     }
   }
 
-  return false;
+  return FALSE;
 }

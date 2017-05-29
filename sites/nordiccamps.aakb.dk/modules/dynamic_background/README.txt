@@ -59,6 +59,12 @@ The context extension allows administrators to select uploaded images base on
 different contexts using the context module. Such contexts as path, role,
 node type or taxonomy and may more conditions.
 
+* Inherit
+---------
+An add-on that works with the Node submodule to automatically use the
+background image from the parent page (by path) if one is not manually
+selected.
+
 Configuration
 -------------
 Enable the modules/extensions that you want to use and go to the administration

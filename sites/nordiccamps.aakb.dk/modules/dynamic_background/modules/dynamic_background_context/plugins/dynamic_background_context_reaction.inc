@@ -1,7 +1,12 @@
 <?php
+/**
+ * @file
+ * Implements a new context reaction that can be used to set dynamic background
+ * images based on context.
+ */
 
 class DynamicBackgroundReaction extends context_reaction {
-  
+
   function options_form($context) {
     $form = array();
     $form['dynamic_background'] = array(
@@ -47,8 +52,19 @@ class DynamicBackgroundReaction extends context_reaction {
   function execute() {
     $image = FALSE;
     foreach ($this->get_contexts() as $context) {
-      $image = dynamic_background_active_image('context', $context->name);;
+      if (isset($context->reactions['dynamic_background'])) {
+        $image = dynamic_background_active_image('context', $context->name);
+
+        // If no image have been found try to select random image (if configured).
+        $image_behaviour = variable_get('dynamic_background_context_image_behaviour', array());
+        if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+          $image = dynamic_background_random_image('context', $context->name);
+        }
+
+        break;
+      }
     }
+
     return $image;
   }
 }

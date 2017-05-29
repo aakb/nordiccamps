@@ -47,6 +47,9 @@ function dynamic_background_user_settings_form() {
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_user_image_style');
 
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_user_image_behaviour');
+
   return $form;
 }
 
@@ -59,25 +62,29 @@ function dynamic_background_user_form($form, $form_state, $user) {
   $form['dynamic_background'] = dynamic_background_image_selector_form('user', $user->uid);
 
   // Allow user to upload a image.
-  if (user_access('dynamic background upload user')) {
+  if (user_access('dynamic background user image selection')) {
     // Load settings and find the number of images.
     $settings = variable_get('dynamic_background_user', array());
     $no_of_images = isset($settings['upload']['no_of_images']) ? $settings['upload']['no_of_images'] : 1;
 
-    // Add user upload form.
-    $upload_form = dynamic_background_user_upload_form('user', $user->uid, $no_of_images);
-    $form['dynamic_background'] += $upload_form['form'];
+    // Only proceed if the form is needed.
+    if ($no_of_images > 0) {
+      // Add user upload form.
+      $upload_form = dynamic_background_user_upload_form('user', $user->uid, $no_of_images);
+      $form['dynamic_background'] += $upload_form['form'];
 
-    // Add validation function.
-    $form['#validate'][] = $upload_form['validate'];
+      // Add submission functions.
+      $form['#submit'][] = $upload_form['submit'];
+      $form['#submit'][] = 'dynamic_background_user_form_submit';
+    }
   }
-  
+
   // Submit handler.
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update background'),
   );
-  
+
   return $form;
 }
 
@@ -118,7 +125,15 @@ function dynamic_background_user_form_submit($form, &$form_state) {
 function dynamic_background_user_dynamic_background_css($vars) {
   global $user;
 
+  // Get active image information.
   $image = dynamic_background_active_image('user', $user->uid);
+
+  // If no image have been found try to select random image (if configured).
+  $image_behaviour = variable_get('dynamic_background_user_image_behaviour', array());
+  if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+    $image = dynamic_background_random_image('user', $user->uid);
+  }
+
   if ($image) {
     // Load image style settings.
     $image_style = variable_get('dynamic_background_user_image_style', FALSE);

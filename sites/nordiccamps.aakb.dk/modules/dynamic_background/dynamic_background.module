@@ -40,7 +40,7 @@ function dynamic_background_permission() {
       );
     }
   }
-  
+
   return $permissions;
 }
 
@@ -73,7 +73,7 @@ function dynamic_background_menu() {
     'page arguments' => array('dynamic_background_admin_weight_form'),
     'access arguments' => array('dynamic backgrounds weight'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => -8,
+    'weight' => 10,
     'file' => 'includes/weight.admin.inc',
   );
 
@@ -99,7 +99,7 @@ function dynamic_background_menu() {
       );
     }
   }
-  
+
   return $items;
 }
 
@@ -120,7 +120,7 @@ function dynamic_background_build_settings_form($form, $form_state, $module, $up
     '#tree' => TRUE,
   );
 
-  // Call the extension/modules implementation of hook_settings_form(), which
+  // Call the extension/modules that implements hook_settings_form(), which
   // gives the extension a possibility to change the form.
   // @todo: move to after the form.
   $function = $module . '_settings_form';
@@ -130,6 +130,9 @@ function dynamic_background_build_settings_form($form, $form_state, $module, $up
 
   // Build upload options form.
   if ($upload) {
+    // Load the defaults.
+    $defaults = variable_get($module, array());
+
     $form[$module]['upload'] = array(
       '#type' => 'fieldset',
       '#title' => t('User supplied images'),
@@ -139,17 +142,17 @@ function dynamic_background_build_settings_form($form, $form_state, $module, $up
     );
 
     $form[$module]['upload']['no_of_images'] = array(
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => t('Number of images'),
-      '#description' => t('The number of images each user should be allowed to upload.'),
-      '#size' => 8,
-      '#default_value' => isset($defaults['upload']['no_of_images']) ? $defaults['upload']['no_of_images'] : '1',
+      '#description' => t('The number of images each user should be allowed to upload, setting it to "0" will disable it.'),
+      '#options' => range(0, 20),
+      '#default_value' => isset($defaults['upload']['no_of_images']) ? intval($defaults['upload']['no_of_images']) : '1',
     );
   }
 
   // Builds the CSS behaviour part of the settings form.
   $form_key = $module . '_css';
-  $default = variable_get($form_key, array());
+  $defaults = variable_get($form_key, array());
   $form[$form_key] = array(
     '#type' => 'fieldset',
     '#title' => t('CSS behaviour'),
@@ -163,14 +166,14 @@ function dynamic_background_build_settings_form($form, $form_state, $module, $up
     '#title' => t('CSS selector'),
     '#description' => t('The CSS selector string to target with the background image e.g. body #container.'),
     '#required' => TRUE,
-    '#default_value' => isset($default['selector']) ? $default['selector'] : '',
+    '#default_value' => isset($defaults['selector']) ? $defaults['selector'] : '',
   );
 
   $form[$form_key]['css'] = array(
     '#type' => 'textarea',
     '#title' => t('CSS'),
     '#description' => t('The CSS to insert with the background image e.g background-size: cover;.'),
-    '#default_value' => isset($default['css']) ? $default['css'] : '',
+    '#default_value' => isset($defaults['css']) ? $defaults['css'] : '',
   );
 
   return system_settings_form($form);
@@ -212,6 +215,43 @@ function dynamic_background_image_style_form($form_key) {
     '#default_value' => isset($default['style']) ? $default['style'] : 0,
   );
 
+  $form[$form_key]['thumbnail_style'] = array(
+    '#type' => 'select',
+    '#title' => t('Choose a style to apply to thumbnail images.'),
+    '#description' => t('To create an image style, go to <a href="@url">image style configuration</a>.', array('@url' => '/admin/config/media/image-styles')),
+    '#options' => $options,
+    '#default_value' => isset($default['thumbnail_style']) ? $default['thumbnail_style'] : 'thumbnail',
+  );
+
+  return $form;
+}
+
+/**
+ * Build the image behaviour form, which can be used in sub-modules to add
+ * support for image behaviour, such as the default random image.
+ *
+ * @param type $form_key
+ * @return type
+ */
+function dynamic_background_image_behaviour_form($form_key) {
+  $form = array();
+
+  $default = variable_get($form_key, array());
+  $form[$form_key] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Image behaviour'),
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#tree' => TRUE,
+  );
+
+  $form[$form_key]['random'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Random image'),
+    '#description' => t('If no image is selected and this is checked a random image will be selected.'),
+    '#default_value' => isset($default['random']) ? $default['random'] : 0,
+  );
+
   return $form;
 }
 
@@ -219,9 +259,19 @@ function dynamic_background_image_style_form($form_key) {
  * Implements hook_dynamic_background_css for the main module.
  */
 function dynamic_background_dynamic_background_css($vars) {
+  // Get active image.
   $image = dynamic_background_active_image();
-  $image_style = variable_get('dynamic_background_image_style', FALSE);
+
+  // If no image have been found try to select random image (if configured).
+  $image_behaviour = variable_get('dynamic_background_image_behaviour', array());
+  if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+    $image = dynamic_background_random_image();
+  }
+
   if ($image) {
+    // Load image style settings.
+    $image_style = variable_get('dynamic_background_image_style', FALSE);
+
     return array(
       'image' => $image,
       'configuration' => variable_get('dynamic_background_css', array()),
@@ -270,7 +320,7 @@ function dynamic_background_settings_form() {
   $form['dynamic_background_setting']['num_of_pictures'] = array(
     '#type' => 'select',
     '#description' => t('Enter the number of images that should be possible to upload.'),
-    '#options' => array('unlimited' => t('Unlimited')) + drupal_map_assoc(range(1, 10)),
+    '#options' => array('unlimited' => t('Unlimited')) + drupal_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30)),
     '#required' => TRUE,
     '#default_value' => isset($default['num_of_pictures']) ? $default['num_of_pictures'] : 'unlimited',
   );
@@ -295,6 +345,9 @@ function dynamic_background_settings_form() {
 
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_image_style');
+
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_image_behaviour');
 
   // Set drupal system settings form and add validation function.
   $form['#validate'][] = 'dynamic_background_settings_form_validate';
@@ -390,13 +443,13 @@ function dynamic_background_css() {
 }
 
 /**
- * Helper function that calls hook_dynamic_background_css() and sorts the 
+ * Helper function that calls hook_dynamic_background_css() and sorts the
  * returned image configurations based on weight. This function may be called
  * by more then one preprocessor function, so a static cache applied.
  *
  * @staticvar type $images
  * @param type $reset
- * @return type 
+ * @return type
  */
 function dynamic_background_load_image_configuration(&$vars, $reset = FALSE) {
   static $images;
@@ -406,7 +459,7 @@ function dynamic_background_load_image_configuration(&$vars, $reset = FALSE) {
       $images = array();
     }
 
-    // Implementation of hook_dynamic_background_css().
+    // Call all hook_dynamic_background_css().
     foreach (module_implements('dynamic_background_css') as $module) {
       $function = $module . '_dynamic_background_css';
       $result = $function($vars);
@@ -420,7 +473,7 @@ function dynamic_background_load_image_configuration(&$vars, $reset = FALSE) {
     // Sort images based on weight.
     usort($images, 'dynamic_background_revers_weight_cmp');
   }
-  
+
   return $images;
 }
 
@@ -473,7 +526,8 @@ function dynamic_background_revers_weight_cmp($a, $b) {
 }
 
 /**
- * Helper function that creates a CSS based on user supplied css.
+ * Helper function that creates CSS based on module configuration and image
+ * selection.
  *
  * @param array $images_conf
  * @param boolean $reset optional
@@ -491,7 +545,7 @@ function dynamic_background_create_css($images_conf, $reset = FALSE) {
       if (isset($image_conf['image_style']) && $image_conf['image_style']) {
         // Image style found, so update the image path with an image style
         // based one.
-        $image->uri = image_style_path($image_conf['image_style'], $image->uri);
+        $image->url = image_style_url($image_conf['image_style'], $image->uri);
       }
 
       // Only use image if css behaviour have be set.
@@ -520,8 +574,9 @@ function dynamic_background_create_css($images_conf, $reset = FALSE) {
     // Build css based on weighted style array.
     $css = '';
     foreach ($style_array as $selector => $style) {
+      $style['image']->url = isset($style['image']->url) ? $style['image']->url : file_create_url($style['image']->uri);
       $css .= $selector . " {
-        background-image: url('" . file_create_url($style['image']->uri) . "');
+        background-image: url('" . $style['image']->url . "');
         " . $style['css'] . "
       }\n";
     }
@@ -557,11 +612,12 @@ function dynamic_background_image_selector_form($type = 'default', $data = -1) {
   // Load image information.
   $images = dynamic_background_load_images();
   $active_image = dynamic_background_active_image($type, $data);
+  $settings = variable_get('dynamic_background_' . $type . '_image_style', array());
 
-  foreach ($images as $fid => $image) {    
+  foreach ($images as $fid => $image) {
     // Create image thumbnail.
     $thumb = array(
-      'style_name' => 'thumbnail',
+      'style_name' => isset($settings['thumbnail_style']) && $settings['thumbnail_style'] ? $settings['thumbnail_style'] : 'thumbnail',
       'path' => $image,
       'alt' => basename($image),
       'title' => basename($image),
@@ -582,8 +638,12 @@ function dynamic_background_image_selector_form($type = 'default', $data = -1) {
   }
 
   // Add some default styling to the image selector.
-  drupal_add_css(drupal_get_path('module', 'dynamic_background') . '/css/dynamic_background.theme.css', 'module');
-  drupal_add_js(drupal_get_path('module', 'dynamic_background') . '/js/dynamic_background_selector.js', 'file');
+  drupal_add_css(drupal_get_path('module', 'dynamic_background') . '/css/dynamic_background.theme.css');
+  drupal_add_js(drupal_get_path('module', 'dynamic_background') . '/js/dynamic_background_selector.js');
+
+  // Allow other modules to modify the form above using
+  // hook_dynamic_background_selector_alter().
+  drupal_alter('dynamic_background_selector', $form, $settings);
 
   return $form;
 }
@@ -645,45 +705,39 @@ function dynamic_background_user_upload_form($type = 'default', $data = -1, $num
   }
 
   // Add some styling to the form.
-  drupal_add_css(drupal_get_path('module', 'dynamic_background') . '/css/dynamic_background_user_upload.theme.css', 'module');
+  drupal_add_css(drupal_get_path('module', 'dynamic_background') . '/css/dynamic_background_user_upload.theme.css');
 
   // Return the $form and the validation function, it's done this way because
   // the validation function otherwise maybe overridden in the calling function.
-  return array('form' => $form, 'validate' => 'dynamic_background_user_upload_form_validate');
+  return array('form' => $form, 'submit' => 'dynamic_background_user_upload_form_submit');
 }
 
 /**
- * Validation function for user uploaded image, which stores the image(s) 
- * uploaded and stores the last uploaded image in the $form_state values
- * info array. So extension automatically can activate the last uploaded
- * image.
+ * Submission callback for user uploaded image, which stores the image(s)
+ * uploaded and stores the last uploaded image in the $form_state values info
+ * array. So extension automatically can activate the last uploaded image.
  *
  * @param type $form
  * @param type $form_state
  */
-function dynamic_background_user_upload_form_validate($form, &$form_state) {
-  // Load settings.
-  $settings = variable_get('dynamic_background_setting', array());
-
+function dynamic_background_user_upload_form_submit($form, &$form_state) {
   // Run through the uploaded files and save them.
   if (!empty($_FILES)) {
     foreach ($_FILES['files']['name'] as $file_field => $val) {
-      if ($val == '') {
-        continue;
-      }
+      if (!empty($val) && strpos($file_field, 'dynamic_background') === 0) {
+        try {
+          // Get information about the extension uploading the image.
+          $info = $form_state['values']['dynamic_background']['dynamic_background_info'];
 
-      try {
-        // Get information about the extension uploading the image.
-        $info = $form_state['values']['dynamic_background']['dynamic_background_info'];
+          // Save the image.
+          $fid = dynamic_background_save_image($file_field, $info['type'], $info['data']);
 
-        // Save the image.
-        $fid = dynamic_background_save_image($file_field, $info['type'], $info['data']);
-
-        // Save fid for the last upload image, which can be used to set it active else where.
-        $form_state['values']['dynamic_background']['dynamic_background_info']['active'] = $fid;
-      }
-      catch(Exception $e) {
-        form_set_error($file_field, $e->getMessage());
+          // Save fid for the last upload image, which can be used to set it active else where.
+          $form_state['values']['dynamic_background']['dynamic_background_info']['active'] = $fid;
+        }
+        catch (Exception $e) {
+          form_set_error($file_field, $e->getMessage());
+        }
       }
     }
   }
@@ -728,6 +782,40 @@ function dynamic_background_active_image($type = 'default', $data = -1) {
 }
 
 /**
+ * Helper function that selects a random image based on extension (type).
+ *
+ * @param string $extension
+ *    The extension that the image should be locationed under.
+ * @param string $data
+ *    Identifier defined by the extension that the image should be located under.
+ * @return object
+ *    An object with fid and uri to the image, if non was found FALSE is
+ *    returned.
+ */
+function dynamic_background_random_image($extension = 'default', $data = FALSE) {
+  $query = db_select('dynamic_background_images', 'dbi');
+  $query->join('file_managed', 'fm', 'dbi.fid = fm.fid');
+  $query->fields('dbi', array('fid'))
+        ->fields('fm', array('uri'));
+
+  // If data is set, select user uploaded images and default images.
+  if ($data) {
+    $query->condition('dbi.extension', array('default', $extension), 'IN')
+      ->condition('data', array('-1', $data), 'IN');
+  }
+  else {
+    $query->condition('dbi.extension', $extension, '=')
+      ->condition('data', '-1', '=');
+  }
+
+  // Find one random image.
+  $query->orderRandom();
+  $query->range(0,1);
+
+  return $query->execute()->fetchObject();
+}
+
+/**
  * Helper function that loads all images in a given context based on the
  * parameters passed.
  *
@@ -765,7 +853,7 @@ function dynamic_background_load_images($extension = 'default', $data = -1, $res
 }
 
 /**
- * Helper function thats used to save an uploaded image on the server and store 
+ * Helper function thats used to save an uploaded image on the server and store
  * it in the database.
  *
  * @param type $file_field
@@ -860,7 +948,7 @@ function dynamic_background_delete_image($fid) {
 }
 
 /**
- * Helper function that sets the active image for the context created by the 
+ * Helper function that sets the active image for the context created by the
  * parameters passed.
  *
  * @param type $fid
@@ -874,8 +962,8 @@ function dynamic_background_set_active($fid, $type = 'default', $data = -1) {
   // Check if active image allready exists, if so run delete old entry.
   $query = db_select('dynamic_background_usage', 'dbu');
   $query->fields('dbu', array('id'))
-         ->condition('type', $type)
-         ->condition('data', $data);
+    ->condition('type', $type)
+    ->condition('data', $data);
   $result = $query->execute()->fetchField();
   if ($result) {
     // Delete old entry.
@@ -888,9 +976,8 @@ function dynamic_background_set_active($fid, $type = 'default', $data = -1) {
   if (!is_null($fid)) {
     db_insert('dynamic_background_usage')
       ->fields(array('fid' => $fid,
-                     'type' => $type,
-                     'data' => $data,
-                     ))
-      ->execute();
+       'type' => $type,
+      'data' => $data,
+      ))->execute();
   }
 }

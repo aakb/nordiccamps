@@ -51,3 +51,17 @@ function hook_dynamic_background_weight() {
     'weight' => -30,
   );
 }
+
+/**
+ * Customize the image selector display.
+ *
+ * @param $form
+ *   A nested array of images, and other settings, as returned by
+ *   dynamic_background_image_selector_form().
+ * @param $settings
+ *   The settings that will be used to display the image for this object.
+ * @param $instance
+ *   The {dynamic_background_usage} record for this object.
+ */
+function hook_dynamic_background_selector_alter(&$form, $settings, $instance) {
+}

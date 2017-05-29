@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_uninstall():
+ * Implements hook_uninstall():
  */
 function dynamic_background_panels_uninstall() {
   // Remove settings.
@@ -50,10 +50,11 @@ function dynamic_background_panels_update_7002() {
       // Load old images as the id's store in panels is not fid.
       $images = variable_get('dynamic_background_images', array());
       db_insert('dynamic_background_usage')
-        ->fields(array('fid' => $images[$id]['fid'],
-                       'type' => 'panels',
-                       'data' => $row->name))
-        ->execute();
+        ->fields(array(
+          'fid' => $images[$id]['fid'],
+          'type' => 'panels',
+          'data' => $row->name)
+        )->execute();
     }
   }
 }

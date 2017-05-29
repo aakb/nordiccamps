@@ -18,6 +18,9 @@ function dynamic_background_panels_settings_form() {
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_panels_image_style');
 
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_panels_image_behaviour');
+
   return $form;
 }
 
@@ -46,12 +49,15 @@ function dynamic_background_panels_form_alter(&$form, $form_state, $form_id) {
       $settings = variable_get('dynamic_background_panels', array());
       $no_of_images = isset($settings['upload']['no_of_images']) ? $settings['upload']['no_of_images'] : 1;
 
-      // Add user upload form.
-      $upload_form = dynamic_background_user_upload_form('panels', $pid, $no_of_images);
-      $form['conf']['dynamic_background'] += $upload_form['form'];
+      // Only proceed if the form is needed.
+      if ($no_of_images > 0) {
+        // Add user upload form.
+        $upload_form = dynamic_background_user_upload_form('panels', $pid, $no_of_images);
+        $form['conf']['dynamic_background'] += $upload_form['form'];
 
-      // Add validation function.
-      $form['#validate'][] = $upload_form['validate'];
+        // Add submission function.
+        $form['#submit'][] = $upload_form['submit'];
+      }
     }
 
     // Add extra submit handler.
@@ -99,7 +105,15 @@ function dynamic_background_panels_conf_submit_handler(&$form, &$form_state) {
 function dynamic_background_panels_dynamic_background_css($vars) {
   // If the current page has a panel, try to use dynamic background.
   if ($pm_page = page_manager_get_current_page()) {
+    // Get active image an return information.
     $image = dynamic_background_active_image('panels', $pm_page['handler']->name);
+
+    // If no image have been found try to select random image (if configured).
+    $image_behaviour = variable_get('dynamic_background_panels_image_behaviour', array());
+    if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+      $image = dynamic_background_random_image('panels', $pm_page['handler']->name);
+    }
+
     if ($image) {
       // Load image style settings.
       $image_style = variable_get('dynamic_background_panels_image_style', FALSE);

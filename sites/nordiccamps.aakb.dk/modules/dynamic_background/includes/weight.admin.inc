@@ -44,7 +44,7 @@ function dynamic_background_admin_weight_form($form_state) {
     $form['module'][$module['name']] = array(
       // Module name
       'name' => array(
-        '#markup' => ucfirst(str_replace('_', ' ', $module['name'])),
+        '#markup' => drupal_ucfirst(str_replace('_', ' ', $module['name'])),
       ),
       // The weight of the module
       'weight' => array(
@@ -57,7 +57,8 @@ function dynamic_background_admin_weight_form($form_state) {
   }
 
   $form['actions']['#type'] = 'actions';
-  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));  
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
+
   return $form;
 }
 
@@ -113,9 +114,13 @@ function theme_dynamic_background_admin_weight_form($variables) {
   );
 
   // Render the table and the rest of the form.
-  $output = theme('table', array('header' => $header, 
-                                 'rows' => $rows,
-                                  'attributes' => array('id' => 'db-weight-table')));
+  $output = theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'db-weight-table',
+    ),
+  ));
   $output .= drupal_render_children($form);
 
   // Make the table draggable.

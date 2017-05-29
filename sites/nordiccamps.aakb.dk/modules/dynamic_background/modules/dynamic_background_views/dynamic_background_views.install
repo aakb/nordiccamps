@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_uninstall():
+ * Implements hook_uninstall():
  */
 function dynamic_background_views_uninstall() {
   // Remove settings.
@@ -28,9 +28,10 @@ function dynamic_background_views_update_7000() {
   $images = variable_get('dynamic_background_images', array());
   while ($row = $result->fetchObject()) {
     db_insert('dynamic_background_usage')
-           ->fields(array('fid' => $images[$row->data]['fid'],
-                          'type' => 'views',
-                          'data' => $row->view_id))
-           ->execute();
+      ->fields(array(
+        'fid' => $images[$row->data]['fid'],
+        'type' => 'views',
+        'data' => $row->view_id)
+      )->execute();
   }
 }

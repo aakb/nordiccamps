@@ -1,7 +1,13 @@
 <?php
 
 /**
- * Implementation of hook_views_plugins().
+ * @file
+ * Defines a new views display type that is allowed to use images from dynamic
+ * background.
+ */
+
+/**
+ * Implements hook_views_plugins().
  *
  * This hook is used to define a new display type that supports dynamic
  * background image selection.

@@ -39,4 +39,5 @@
  * signs to enable.
  */
 $sites = array (
+  'nordiccamps.vm' => 'nordiccamps.aakb.dk'
 );

@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_uninstall():
+ * Implements hook_uninstall():
  */
 function dynamic_background_node_uninstall() {
   // Remove settings.
@@ -31,10 +31,11 @@ function dynamic_background_node_update_7000() {
     foreach ($selected_images as $id => $selected) {
       if ($selected['selected']) {
         db_insert('dynamic_background_usage')
-               ->fields(array('fid' => $images[$id]['fid'],
-                              'type' => 'node',
-                              'data' => $row->nid))
-               ->execute();
+          ->fields(array(
+            'fid' => $images[$id]['fid'],
+            'type' => 'node',
+            'data' => $row->nid)
+          )->execute();
       }
     }
   }

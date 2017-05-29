@@ -44,8 +44,8 @@ class views_plugin_display_page_db extends views_plugin_display_page {
     );
 
     // Try loading styling and js.
-    drupal_add_js(drupal_get_path('module', 'dynamic_background') . '/js/dynamic_background_selector.js', 'file');
-    drupal_add_css(drupal_get_path('module', 'dynamic_background_views') . '/css/dynamic_background.admin.css', 'module');
+    drupal_add_js(drupal_get_path('module', 'dynamic_background') . '/js/dynamic_background_selector.js');
+    drupal_add_css(drupal_get_path('module', 'dynamic_background_views') . '/css/dynamic_background.admin.css');
   }
 
   /**

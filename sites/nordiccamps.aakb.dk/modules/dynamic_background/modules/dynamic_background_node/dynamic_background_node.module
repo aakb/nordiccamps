@@ -17,10 +17,17 @@ function dynamic_background_node_settings_form() {
   $options = array();
   $types = node_type_get_types();
   foreach ($types as $key => $type) {
-    $options[$key] = $type->name . ' (' . t(check_plain($type->description)) . ')';
+    $options[$key] = $type->name;
+    $description = t(filter_xss_admin($type->description));
+    if (!empty($description)) {
+      $options[$key] .= ' (' . $description . ')';
+    }
   }
 
-  $defaults = variable_get('dynamic_background_node', array());
+  // Enable all content types by default.
+  $settings = variable_get('dynamic_background_node', array());
+  dynamic_background_default_content_types($settings);
+
   $form['dynamic_background_node']['settings'] = array(
       '#type' => 'fieldset',
       '#title' => t('Content types'),
@@ -34,13 +41,36 @@ function dynamic_background_node_settings_form() {
     '#title' => t('Content types'),
     '#required' => TRUE,
     '#options' => $options,
-    '#default_value' => isset($defaults['settings']['content_types']) ? $defaults['settings']['content_types'] : array(),
+    '#default_value' => $settings['settings']['content_types'],
   );
 
   // Add image style to the form.
   $form += dynamic_background_image_style_form('dynamic_background_node_image_style');
 
+  // Add image behavior form.
+  $form += dynamic_background_image_behaviour_form('dynamic_background_node_image_behaviour');
+
   return $form;
+}
+
+/**
+ * Ensure that all content types are enabled by default.
+ *
+ * @param @settings
+ */
+function dynamic_background_default_content_types(&$settings) {
+  if (!isset($settings['settings']['content_types'])) {
+    if (!isset($settings['settings'])) {
+      $settings['settings'] = array();
+    }
+    $settings['settings']['content_types'] = array();
+
+    foreach (node_type_get_types() as $key => $type) {
+      $settings['settings']['content_types'][$key] = $key;
+    }
+
+    ksort($settings['settings']['content_types']);
+  }
 }
 
 /**
@@ -53,7 +83,10 @@ function dynamic_background_node_settings_form() {
  */
 function dynamic_background_node_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value'])) {
+    // Enable all content types by default.
     $settings = variable_get('dynamic_background_node', array());
+    dynamic_background_default_content_types($settings);
+
     if (isset($settings['settings']['content_types'][$form['type']['#value']]) &&
         $settings['settings']['content_types'][$form['type']['#value']]) {
 
@@ -81,16 +114,19 @@ function dynamic_background_node_form_alter(&$form, &$form_state, $form_id) {
         $settings = variable_get('dynamic_background_node', array());
         $no_of_images = isset($settings['upload']['no_of_images']) ? $settings['upload']['no_of_images'] : 1;
 
-        // Add user upload form.
-        $upload_form = dynamic_background_user_upload_form('node', $nid, $no_of_images);
-        $form['additional_settings']['dynamic_background'] += $upload_form['form'];
+        // Only proceed if the form is needed.
+        if ($no_of_images > 0) {
+          // Add user upload form.
+          $upload_form = dynamic_background_user_upload_form('node', $nid, $no_of_images);
+          $form['additional_settings']['dynamic_background'] += $upload_form['form'];
 
-        // Add validation function.
-        $form['#validate'][] = $upload_form['validate'];
+          // Add submission function.
+          $form['#submit'][] = $upload_form['submit'];
+        }
       }
 
       // Add some style to the image selection.
-      drupal_add_css(drupal_get_path('module', 'dynamic_background_node') . '/css/dynamic_background_node.admin.css', 'module');
+      drupal_add_css(drupal_get_path('module', 'dynamic_background_node') . '/css/dynamic_background_node.admin.css');
     }
   }
 }
@@ -116,7 +152,10 @@ function dynamic_background_node_node_update($node) {
  * information is delete during node deletion.
  */
 function dynamic_background_node_node_delete($node) {
+  // Enable all content types by default.
   $settings = variable_get('dynamic_background_node', array());
+  dynamic_background_default_content_types($settings);
+
   if (isset($settings['settings']['content_types']) && $settings['settings']['content_types'][$node->type]) {
     dynamic_background_set_active(NULL, 'node', $node->nid);
   }
@@ -129,8 +168,11 @@ function dynamic_background_node_node_delete($node) {
  * @param object $node
  */
 function dynamic_background_set_active_node_image($node) {
+  // Enable all content types by default.
   $settings = variable_get('dynamic_background_node', array());
-  if (isset($settings['settings']['content_types']) && $settings['settings']['content_types'][$node->type] && isset($node->dynamic_background)) {
+  dynamic_background_default_content_types($settings);
+
+  if (isset($settings['settings']['content_types'][$node->type]) && $settings['settings']['content_types'][$node->type] && isset($node->dynamic_background)) {
     // Look through the form to find selected image, if any.
     $is_selected = FALSE;
     foreach ($node->dynamic_background as $fid => $element) {
@@ -166,6 +208,13 @@ function dynamic_background_node_dynamic_background_css($vars) {
 
     // Get active image an return information.
     $image = dynamic_background_active_image('node', $node->nid);
+
+    // If no image have been found try to select random image (if configured).
+    $image_behaviour = variable_get('dynamic_background_node_image_behaviour', array());
+    if (!$image && (isset($image_behaviour['random']) && $image_behaviour['random'])) {
+      $image = dynamic_background_random_image('node', $node->nid);
+    }
+
     if ($image) {
       // Load image style settings.
       $image_style = variable_get('dynamic_background_node_image_style', FALSE);

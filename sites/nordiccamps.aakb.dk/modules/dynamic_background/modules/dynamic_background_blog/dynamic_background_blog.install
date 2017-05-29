@@ -7,9 +7,10 @@
  */
 
 /**
- * Implementation of hook_schema(), which implementes the table
- * dynamic_background_node that holds information about about the pr. node
- * selected image.
+ * Implements hook_schema().
+ *
+ * The table dynamic_background_node that holds information about about the pr.
+ * node selected image.
  *
  * @return array $schema
  */
@@ -39,7 +40,7 @@ function dynamic_background_blog_schema() {
 }
 
 /**
- * Implementation of hook_uninstall():
+ * Implements hook_uninstall().
  */
 function dynamic_background_blog_uninstall() {
   // Remove database table.
@@ -63,10 +64,11 @@ function dynamic_background_blog_update_7000() {
   $images = variable_get('dynamic_background_images', array());
   while ($row = $result->fetchObject()) {
     db_insert('dynamic_background_usage')
-           ->fields(array('fid' => $images[$row->image_id]['fid'],
-                          'type' => 'blog',
-                          'data' => $row->uid))
-           ->execute();
+      ->fields(array(
+        'fid' => $images[$row->image_id]['fid'],
+        'type' => 'blog',
+        'data' => $row->uid)
+      )->execute();
   }
 }
 
