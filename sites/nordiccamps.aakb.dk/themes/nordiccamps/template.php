@@ -156,7 +156,7 @@ function nordiccamps_page_alter(&$page) {
 /**
  * Implements hook_preprocess_html_tag().
  */
-function iordiccamps_preprocess_html_tag(&$vars) {
+function nordiccamps_preprocess_html_tag(&$vars) {
   // Change html tags to apply cookie information.
   if ($vars['element']['#tag'] == 'script') {
     // Add consent check to google analytics.
