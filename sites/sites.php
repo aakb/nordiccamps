@@ -40,5 +40,5 @@
  */
 $sites = array (
   'nordiccamps.vm' => 'nordiccamps.aakb.dk',
-  'nordiccamps.docker.localhost' => 'nordiccamps.aakb.dk',
+  'nordiccamps.local.itkdev.dk' => 'nordiccamps.aakb.dk',
 );
